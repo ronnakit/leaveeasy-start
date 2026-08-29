@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ใส่ข้อมูลตัวอย่าง · LeaveEasy</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/util.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/data.js" defer></script>
+  <script type="module" src="js/firebase-config.js"></script>
+  <script src="js/seed.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <h1>ใส่ข้อมูลตัวอย่างลง Firestore</h1>
+    <p class="subtitle">
+      หน้านี้เป็นเครื่องมือชั่วคราวสำหรับสัปดาห์ที่ 6 — ใช้ครั้งเดียวเพื่อใส่ข้อมูลตัวอย่าง
+      (ผู้ใช้ 3 คน · ประเภทการลา 3 แบบ · ใบขอลา 5 ใบ · ความเห็น 4 รายการ) ลง Firestore จริง
+    </p>
+
+    <div class="card">
+      <div class="btn-row">
+        <button id="ปุ่มใส่ข้อมูล" class="btn">ใส่ข้อมูลตัวอย่างลง Firestore</button>
+      </div>
+      <p id="สถานะ" class="hint" style="margin-top:12px"></p>
+    </div>
+  </div>
+</body>
+</html>
