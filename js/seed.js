@@ -14,19 +14,19 @@
 
     try {
       for (var u of window.LEAVE_DATA.users) {
-        await window.setDoc(window.doc(window.db, "users", u.id), {
+        await window.db.collection("users").doc(u.id).set({
           name: u.name, email: u.email, role: u.role
         });
       }
 
       for (var lt of window.LEAVE_DATA.leaveTypes) {
-        await window.setDoc(window.doc(window.db, "leaveTypes", lt.id), {
+        await window.db.collection("leaveTypes").doc(lt.id).set({
           name: lt.name
         });
       }
 
       for (var lr of window.LEAVE_DATA.leaveRequests) {
-        await window.setDoc(window.doc(window.db, "leaveRequests", lr.id), {
+        await window.db.collection("leaveRequests").doc(lr.id).set({
           title: lr.title,
           reason: lr.reason,
           status: lr.status,
@@ -39,13 +39,13 @@
       }
 
       for (var ap of window.LEAVE_DATA.approvals) {
-        await window.setDoc(
-          window.doc(window.db, "leaveRequests", ap.requestId, "approvals", ap.id),
-          {
+        await window.db
+          .collection("leaveRequests").doc(ap.requestId)
+          .collection("approvals").doc(ap.id)
+          .set({
             authorId: ap.authorId, authorName: ap.authorName,
             message: ap.message, createdAt: ap.createdAt
-          }
-        );
+          });
       }
 
       สถานะ.textContent = "ใส่ข้อมูลตัวอย่างเรียบร้อยแล้ว ✅ เปิด Firebase Console เพื่อตรวจสอบได้เลย";

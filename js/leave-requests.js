@@ -61,7 +61,7 @@
 
   async function โหลดจากฐานข้อมูล() {
     try {
-      var snap = await window.getDocs(window.collection(window.db, "leaveRequests"));
+      var snap = await window.db.collection("leaveRequests").get();
       return snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
     } catch (err) {
       console.error(err);
