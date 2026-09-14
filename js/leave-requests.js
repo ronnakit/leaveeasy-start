@@ -33,6 +33,18 @@
     // กรองตามบทบาทผู้ใช้ (ตาม ACL ใน Part C):
     // ถ้าเป็น employee ให้เห็นเฉพาะใบลาของตัวเอง
     var userRole = window.currentUserRole;
+    if (currentUser && !userRole) {
+      try {
+        var userDoc = await window.db.collection("users").doc(currentUser.uid).get();
+        if (userDoc.exists && userDoc.data().role) {
+          userRole = userDoc.data().role;
+          window.currentUserRole = userRole;
+        }
+      } catch (e) {
+        console.warn("ไม่สามารถอ่าน role ได้:", e);
+      }
+    }
+
     if (currentUser && userRole === "employee") {
       ใบลาทั้งหมด = ใบลาทั้งหมด.filter(function (ใบ) {
         return ใบ.requesterId === currentUser.uid;

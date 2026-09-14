@@ -85,29 +85,48 @@
       return '<div class="field-row"><span class="k">' + r[0] + "</span><span>" + r[1] + "</span></div>";
     }).join("");
 
-    // สิทธิ์การแสดงปุ่ม (จะปรับตามบทบาทใน Part C)
+    // สิทธิ์การแสดงปุ่ม (ควบคุมตามบทบาท ACL)
     var currentUser = firebase.auth().currentUser;
     var userRole = window.currentUserRole || "employee";
 
     var btnRow = '<div class="btn-row" id="แถวปุ่มจัดการ">';
 
-    // ปุ่มอนุมัติ / ไม่อนุมัติ ขึ้นเฉพาะใบที่ยังรอพิจารณา (และบทบาทไม่ใช่ employee ถ้ามีข้อมูลบทบาท)
+    // ปุ่มอนุมัติ / ไม่อนุมัติ: แสดงเฉพาะเมื่อ status เป็น รอพิจารณา และ role ไม่ใช่ employee (ต้องเป็น manager หรือ hr)
+    var canApprove = (userRole === "manager" || userRole === "hr");
     if (ใบ.status === "รอพิจารณา") {
-      btnRow +=
-        '<button type="button" class="btn-ok" id="ปุ่มอนุมัติ">อนุมัติ</button>' +
-        '<button type="button" class="btn-danger" id="ปุ่มไม่อนุมัติ">ไม่อนุมัติ</button>';
+      if (canApprove) {
+        btnRow +=
+          '<button type="button" class="btn-ok" id="ปุ่มอนุมัติ">อนุมัติ</button>' +
+          '<button type="button" class="btn-danger" id="ปุ่มไม่อนุมัติ">ไม่อนุมัติ</button>';
+      } else {
+        html += '<p class="hint">คุณอยู่ในบทบาทพนักงาน (employee) ไม่มีสิทธิ์อนุมัติใบลา</p>';
+      }
     } else {
       html += '<p class="hint">ใบนี้พิจารณาแล้ว จึงเปลี่ยนสถานะต่อไม่ได้</p>';
     }
 
-    // ปุ่มลบใบลา (มี confirm เสมอ)
-    btnRow += '<button type="button" class="btn-ghost" id="ปุ่มลบใบลา" style="color:var(--สีจาง); border-color:#d8dee4;">🗑️ ลบใบขอลานี้</button>';
+    // ปุ่มลบใบลา ตามสิทธิ์ใน ACL:
+    // - employee: ลบได้เฉพาะใบของตัวเองที่ยังรอพิจารณา
+    // - manager: ไม่มีสิทธิ์ลบ
+    // - hr: ลบได้ทุกใบ
+    var canDelete = false;
+    if (userRole === "hr") {
+      canDelete = true;
+    } else if (userRole === "employee" && ใบ.status === "รอพิจารณา") {
+      if (!currentUser || ใบ.requesterId === currentUser.uid || ใบ.requesterId === "u001") {
+        canDelete = true;
+      }
+    }
+
+    if (canDelete) {
+      btnRow += '<button type="button" class="btn-ghost" id="ปุ่มลบใบลา" style="color:var(--สีจาง); border-color:#d8dee4;">🗑️ ลบใบขอลานี้</button>';
+    }
     btnRow += '</div>';
 
     html += btnRow;
     กล่องใบลา.innerHTML = html;
 
-    if (ใบ.status === "รอพิจารณา") {
+    if (ใบ.status === "รอพิจารณา" && canApprove) {
       var btnOk = document.getElementById("ปุ่มอนุมัติ");
       var btnNo = document.getElementById("ปุ่มไม่อนุมัติ");
       if (btnOk) btnOk.addEventListener("click", function () { เปลี่ยนสถานะ("อนุมัติ"); });
@@ -118,12 +137,12 @@
     if (btnDel) {
       btnDel.addEventListener("click", ลบใบลา);
     }
-
-    // ปรับการแสดงปุ่มตามสิทธิ์ (ACL) ถ้ามีฟังก์ชันเช็ค
-    if (typeof window.applyRoleVisibility === "function") {
-      window.applyRoleVisibility();
-    }
   }
+
+  // อัปเดตการแสดงผลเมื่อ Auth พร้อม
+  window.addEventListener("leaveeasy-auth-ready", function () {
+    if (ใบ) วาดใบลา();
+  });
 
   // ── เปลี่ยนสถานะใน Firestore (Update เฉพาะฟิลด์ status) ──
   async function เปลี่ยนสถานะ(สถานะใหม่) {

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก · LeaveEasy</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/util.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js" defer></script>
+  <script src="js/firebase-config.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/register.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container" style="max-width: 520px;">
+    <h1>สมัครสมาชิก</h1>
+    <p class="subtitle">สร้างบัญชีผู้ใช้ใหม่สำหรับระบบขอลา LeaveEasy</p>
+
+    <div class="card">
+      <div id="ข้อความเตือน" class="alert alert-error hidden"></div>
+      <div id="ข้อความสำเร็จ" class="alert alert-ok hidden"></div>
+
+      <form id="ฟอร์มสมัคร">
+        <label for="name">ชื่อ - นามสกุล</label>
+        <input type="text" id="name" required placeholder="เช่น เชิดชัย ใจดี">
+
+        <label for="email">อีเมล</label>
+        <input type="email" id="email" required placeholder="you@example.com" autocomplete="email">
+
+        <label for="password">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
+        <input type="password" id="password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+
+        <label for="department">แผนก / ฝ่าย (ไม่บังคับ)</label>
+        <input type="text" id="department" placeholder="เช่น ฝ่ายวิศวกรรม, บัญชี, การตลาด">
+
+        <label for="role">บทบาทในระบบ</label>
+        <select id="role">
+          <option value="employee" selected>🙋 พนักงานทั่วไป (employee) — ยื่นใบลาและดูของตนเอง</option>
+          <option value="manager">✅ หัวหน้างาน / ผู้อนุมัติ (manager) — ดูและอนุมัติใบลา</option>
+          <option value="hr">🧾 ฝ่ายบุคคล (hr) — ดูทุกใบ อนุมัติ และจัดการประเภทการลา</option>
+        </select>
+        <p class="hint">ค่าเริ่มต้นคือ "employee" (พนักงานทั่วไป)</p>
+
+        <div class="btn-row" style="margin-top: 22px;">
+          <button type="submit" id="ปุ่มสมัคร" style="width: 100%;">ยืนยันการสมัครสมาชิก</button>
+        </div>
+      </form>
+
+      <div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--สีขอบ); padding-top: 16px;">
+        <p class="hint">มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบที่นี่</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
