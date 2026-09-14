@@ -19,6 +19,18 @@ desktop.ini
 *.log
 .vscode/
 .idea/
+.claude/
+
+# ── ไฟล์ config และ key ที่มีข้อมูลอ่อนไหว ──
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+service-account*.json
+firebase-adminsdk*.json
+*secret*
+*credential*
 
 
 # ─────────────────────────────────────────────────────────────
