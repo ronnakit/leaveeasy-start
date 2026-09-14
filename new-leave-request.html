@@ -12,6 +12,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js" defer></script>
   <script src="js/firebase-config.js" defer></script>
+  <script src="js/ai-config.js" defer></script>
+  <script src="js/ai-service.js" defer></script>
   <script src="js/new-leave-request.js" defer></script>
 </head>
 <body>
@@ -30,6 +32,14 @@
 
         <label for="reason">เหตุผลการลา</label>
         <textarea id="reason" placeholder="เล่าเหตุผลสั้น ๆ ให้หัวหน้าเข้าใจ"></textarea>
+
+        <div style="margin-top: 6px; margin-bottom: 12px;">
+          <button type="button" id="ปุ่มaiช่วยเลือก" class="btn-ghost" style="border: 1px solid #b9ccf5; background: #eef4ff; color: #1a3e7a; font-size: 15px; padding: 7px 14px;">
+            🤖 ให้ AI ช่วยเลือกประเภทการลา
+          </button>
+        </div>
+
+        <div id="กล่องเตือนai" class="alert alert-ai hidden" style="margin-bottom: 14px;"></div>
 
         <label for="leaveTypeId">ประเภทการลา</label>
         <select id="leaveTypeId">

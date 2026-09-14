@@ -37,6 +37,77 @@
     ช่องประเภท.appendChild(ตัวเลือก);
   });
 
+  // ── AI ระดับ 1: ปุ่มให้ AI ช่วยจัดประเภทการลา ──
+  var ปุ่มAI = document.getElementById("ปุ่มaiช่วยเลือก");
+  var กล่องเตือนAI = document.getElementById("กล่องเตือนai");
+
+  if (ปุ่มAI) {
+    ปุ่มAI.addEventListener("click", async function () {
+      var reasonText = document.getElementById("reason").value.trim();
+
+      if (!reasonText) {
+        เตือน("กรุณากรอกเหตุผลการลาก่อน จึงจะให้ AI ช่วยวิเคราะห์ได้");
+        document.getElementById("reason").focus();
+        return;
+      }
+
+      // 1. สัญญาณกำลังทำงาน และปิดไม่ให้กดซ้ำ
+      ปุ่มAI.disabled = true;
+      var ข้อความเดิม = ปุ่มAI.innerHTML;
+      ปุ่มAI.innerHTML = "⏳ กำลังวิเคราะห์เหตุผล…";
+      กล่องเตือนAI.classList.add("hidden");
+
+      try {
+        if (!window.AIService) {
+          throw new Error("AIService ยังไม่พร้อมใช้งาน");
+        }
+
+        // เรียก AI Service พร้อมส่งรายการประเภทที่มีอยู่จริง
+        var result = await window.AIService.classifyLeaveType(reasonText, รายการประเภท);
+
+        // 5. ผลต้องเป็นประเภทที่มีอยู่จริงเท่านั้น
+        if (result.success && result.selectedTypeId) {
+          var matched = รายการประเภท.find(function (t) { return t.id === result.selectedTypeId; });
+          if (matched) {
+            // เลือกประเภทให้ในช่องเลือก
+            ช่องประเภท.value = matched.id;
+
+            // 2. ป้ายข้อเสนอจาก AI — โปรดตรวจสอบก่อนยืนยัน (3. แก้ประเภทได้เสมอ)
+            กล่องเตือนAI.className = "alert alert-ai";
+            กล่องเตือนAI.innerHTML =
+              "💡 <strong>ข้อเสนอจาก AI — โปรดตรวจสอบก่อนยืนยัน:</strong> " +
+              "แนะนำประเภท <strong>" + esc(matched.name) + "</strong> (" + esc(result.explanation || "สอดคล้องกับเหตุผล") + ") " +
+              "<br><span style='font-size:14px; opacity:0.85;'>* คุณสามารถเปลี่ยนประเภทในช่องด้านล่างนี้ได้เสมอหากเห็นว่าไม่ตรง</span>";
+            กล่องเตือนAI.classList.remove("hidden");
+          } else {
+            // ผลไม่ตรงกับที่มีจริง
+            กล่องเตือนAI.className = "alert alert-warn";
+            กล่องเตือนAI.innerHTML = "⚠️ AI ไม่พบประเภทการลาที่ตรงกับประเภทในระบบ จึงไม่ได้เปลี่ยนค่าเดิม";
+            กล่องเตือนAI.classList.remove("hidden");
+          }
+        } else {
+          // 4. กรณีจัดให้ไม่ได้
+          กล่องเตือนAI.className = "alert alert-warn";
+          กล่องเตือนAI.innerHTML = "⚠️ " + esc(result.message || "AI ไม่สามารถจัดประเภทได้จากเหตุผลนี้ — กรุณาเลือกประเภทการลาด้วยตนเอง");
+          กล่องเตือนAI.classList.remove("hidden");
+        }
+      } catch (err) {
+        // 4. เรียกไม่สำเร็จ หรือ Timeout เกิน 15 วินาที ต้องแจ้งเตือน และยังบันทึกได้ปกติ
+        console.error("AI classify error:", err);
+        var errMsg = err.message === "TIMEOUT_15S"
+          ? "การเชื่อมต่อกับ AI ใช้เวลานานเกิน 15 วินาที"
+          : "เรียกใช้ AI ไม่สำเร็จ (" + err.message + ")";
+        กล่องเตือนAI.className = "alert alert-warn";
+        กล่องเตือนAI.innerHTML = "⚠️ " + esc(errMsg) + " — คุณยังสามารถเลือกประเภทและบันทึกใบลาได้ตามปกติ";
+        กล่องเตือนAI.classList.remove("hidden");
+      } finally {
+        ปุ่มAI.disabled = false;
+        ปุ่มAI.innerHTML = ข้อความเดิม;
+      }
+    });
+  }
+
+
   ฟอร์ม.addEventListener("submit", async function (e) {
     e.preventDefault();
 
