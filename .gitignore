@@ -20,6 +20,7 @@ desktop.ini
 .vscode/
 .idea/
 .claude/
+.firebase/
 
 # ── ไฟล์ config และ key ที่มีข้อมูลอ่อนไหว ──
 .env
