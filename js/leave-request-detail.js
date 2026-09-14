@@ -85,11 +85,27 @@
       return '<div class="field-row"><span class="k">' + r[0] + "</span><span>" + r[1] + "</span></div>";
     }).join("");
 
+    // กล่องแสดงผลสรุป AI Level 2 (aiSuggestion) ถ้ามี
+    if (ใบ.aiSuggestion) {
+      html +=
+        '<div class="alert alert-ai" style="margin-top:16px; border-left:4px solid var(--สีหลัก); background:#eef4ff;">' +
+        '<div style="font-weight:700; color:#1a3e7a; margin-bottom:4px;">🤖 สรุปสาระสำคัญโดย AI (สำหรับประกอบการพิจารณา):</div>' +
+        '<div style="line-height:1.6; margin-bottom:6px;">' + esc(ใบ.aiSuggestion).replace(/\n/g, "<br>") + '</div>' +
+        '<div style="font-size:13px; color:var(--สีจาง);">⚠️ <em>ข้อเสนอแนะจาก AI ไม่ได้ตัดสินใจแทน — สถานะจริงต้องได้รับอนุมัติจากผู้มีสิทธิ์เท่านั้น</em></div>' +
+        '</div>';
+    }
+
     // สิทธิ์การแสดงปุ่ม (ควบคุมตามบทบาท ACL)
     var currentUser = firebase.auth().currentUser;
     var userRole = window.currentUserRole || "employee";
 
     var btnRow = '<div class="btn-row" id="แถวปุ่มจัดการ">';
+
+    // ปุ่ม AI ระดับ 2: สรุปใบลาให้หัวหน้าอ่าน
+    btnRow +=
+      '<button type="button" class="btn-ghost" id="ปุ่มaiสรุป" style="border:1px solid #b9ccf5; background:#f0f5ff; color:#1a3e7a;">' +
+      '🤖 ' + (ใบ.aiSuggestion ? 'ให้ AI สรุปใหม่อีกครั้ง' : 'ให้ AI ช่วยสรุปใบลา') +
+      '</button>';
 
     // ปุ่มอนุมัติ / ไม่อนุมัติ: แสดงเฉพาะเมื่อ status เป็น รอพิจารณา และ role ไม่ใช่ employee (ต้องเป็น manager หรือ hr)
     var canApprove = (userRole === "manager" || userRole === "hr");
@@ -126,6 +142,12 @@
     html += btnRow;
     กล่องใบลา.innerHTML = html;
 
+    // ผูก Event ปุ่ม AI สรุปใบลา
+    var btnAiSummary = document.getElementById("ปุ่มaiสรุป");
+    if (btnAiSummary) {
+      btnAiSummary.addEventListener("click", สรุปใบลาด้วยAI);
+    }
+
     if (ใบ.status === "รอพิจารณา" && canApprove) {
       var btnOk = document.getElementById("ปุ่มอนุมัติ");
       var btnNo = document.getElementById("ปุ่มไม่อนุมัติ");
@@ -136,6 +158,70 @@
     var btnDel = document.getElementById("ปุ่มลบใบลา");
     if (btnDel) {
       btnDel.addEventListener("click", ลบใบลา);
+    }
+  }
+
+  // ── ฟังก์ชัน AI ระดับ 2: ให้ AI สรุปใบลา และบันทึกผลลง Firestore ──
+  async function สรุปใบลาด้วยAI() {
+    var btnAiSummary = document.getElementById("ปุ่มaiสรุป");
+    if (!btnAiSummary) return;
+
+    btnAiSummary.disabled = true;
+    var ข้อความเดิม = btnAiSummary.innerHTML;
+    btnAiSummary.innerHTML = "⏳ กำลังอ่านและสรุปข้อมูล…";
+
+    try {
+      if (!window.AIService) {
+        throw new Error("AIService ยังไม่พร้อมใช้งาน");
+      }
+
+      // ขั้นที่ 1: รวบรวมข้อมูลใบลาใบนี้
+      var requestData = {
+        requestId: รหัสใบลา,
+        title: ใบ.title || "",
+        reason: ใบ.reason || "",
+        leaveTypeName: ใบ.leaveTypeName || "",
+        startDate: ใบ.startDate || "",
+        endDate: ใบ.endDate || "",
+        requesterName: ใบ.requesterName || "",
+        createdAt: ใบ.createdAt || ""
+      };
+
+      // ขั้นที่ 2: ให้ AI เขียนสรุปสั้น ๆ
+      var res = await window.AIService.summarizeLeaveRequest(requestData);
+      var summaryText = res.summary;
+
+      // ขั้นที่ 3: เขียนสรุปกลับลงฐานข้อมูล Firestore
+      // 3.1 บันทึกช่อง aiSuggestion ลงในเอกสารใบลา (สถานะจริงห้ามเปลี่ยนเอง)
+      await window.db.collection("leaveRequests").doc(รหัสใบลา).update({
+        aiSuggestion: summaryText
+      });
+
+      // 3.2 สร้าง subcollection aiLog เก็บ input, output, createdAt ทุกครั้งที่เรียก
+      try {
+        await window.db
+          .collection("leaveRequests").doc(รหัสใบลา)
+          .collection("aiLog")
+          .add({
+            input: JSON.stringify(requestData),
+            output: summaryText,
+            createdAt: เวลาตอนนี้()
+          });
+      } catch (logErr) {
+        console.warn("บันทึก aiLog ไม่สำเร็จ:", logErr);
+      }
+
+      // อัปเดตข้อมูลในหน้าจอ
+      ใบ.aiSuggestion = summaryText;
+      วาดใบลา();
+      alert("✅ AI สรุปใบลาเรียบร้อยแล้ว และบันทึกข้อมูลลง Firestore สำเร็จ");
+    } catch (err) {
+      console.error("AI summarize error:", err);
+      alert("เกิดข้อผิดพลาดในการสรุปโดย AI: " + err.message);
+      if (btnAiSummary) {
+        btnAiSummary.disabled = false;
+        btnAiSummary.innerHTML = ข้อความเดิม;
+      }
     }
   }
 
