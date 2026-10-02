@@ -1,13 +1,10 @@
 # 🌐 Live Web App: https://leaveeasy-ronnakit.web.app
+# 📊 รายงานผลการทดสอบ: [test-results.md](file:///d:/leaveeasy/test-results.md) | [BACKLOG.md](file:///d:/leaveeasy/BACKLOG.md)
 
-# 🔧 LeaveEasy — จุดเริ่มต้นของใบงาน
+# 🔧 LeaveEasy — ระบบขอลาออนไลน์ (ใบงานที่ 4 สัปดาห์ที่ 9)
 
-**ผู้จัดทำ:** รณกฤต ตันสว่างกุล
-
-**ADT-RAISE Non-Degree Batch 2 · Module 2: MVP-Ready** (สัปดาห์ที่ 6–9)
-
-นี่คือ **เว็บ prototype ของระบบขอลาออนไลน์** ที่ทุกคนจะใช้เป็นจุดเริ่มต้นในคาบ Workshop บ่ายวันเสาร์
-เขียนด้วย **HTML · CSS · JavaScript ธรรมดา** ไม่มี framework ไม่มีขั้นตอน build
+**ผู้จัดทำ:** รณกฤต ตันสว่างกุล  
+**หลักสูตร:** ADT-RAISE Non-Degree Batch 2 · Module 2: MVP-Ready (สัปดาห์ที่ 6–9)
 
 ---
 
